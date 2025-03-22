@@ -1,12 +1,9 @@
 import mongoose, { Schema } from 'mongoose'
-import OrderItemSchema from './OrderItem'
+import { OrderItemSchema } from './OrderItem'
 import { Item } from './Item'
 
 export interface Order {
-    orderItems: {
-        item: Item
-        quantity: number
-    }[]
+    orderItems: Item[]
     totalAmount: number
     createdAt?: Date
     updatedAt?: Date

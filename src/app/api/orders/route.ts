@@ -41,8 +41,14 @@ export async function POST(req: Request) {
             0
         )
 
+        const newOrderItems = validOrderItems.map(({ item, quantity }) => ({
+            item,
+            quantity,
+        }))
+
         const newOrder = new OrderSchema({
-            orderItems: validOrderItems,
+            // orderItems: validOrderItems,
+            orderItems: newOrderItems,
             totalAmount,
         })
 

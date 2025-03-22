@@ -1,11 +1,11 @@
-import mongoose, { Schema } from 'mongoose'
+import mongoose, { Schema, Document } from 'mongoose'
 
 export interface OrderItem extends Document {
     item: mongoose.Types.ObjectId
     quantity: number
 }
 
-const OrderItemSchema = new Schema<OrderItem>(
+export const OrderItemSchema = new Schema<OrderItem>(
     {
         item: {
             type: mongoose.Schema.Types.ObjectId,
@@ -20,5 +20,6 @@ const OrderItemSchema = new Schema<OrderItem>(
     { _id: false }
 )
 
+// Export both the schema and the model
 export default mongoose.models.OrderItem ||
     mongoose.model<OrderItem>('OrderItem', OrderItemSchema)

@@ -7,13 +7,14 @@ import { User } from '@/models/User'
 import UserSelect from '@/components/UserSelect'
 import AddItemModal from '@/components/AddItemModal'
 import ItemList from '@/components/ItemList'
+import { UserData } from '@/types/UserData'
 
 const { Header, Content } = Layout
 const { Title, Text } = Typography
 
 export default function Home() {
     const [users, setUsers] = useState<User[]>([])
-    const [userData, setUserData] = useState<User>()
+    const [userData, setUserData] = useState<UserData>()
     const [selectedUser, setSelectedUser] = useState<User | null>(null)
     const [loading, setLoading] = useState(true)
     const [isModalVisible, setIsModalVisible] = useState(false)

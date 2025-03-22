@@ -1,13 +1,23 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import mongoose from 'mongoose'
 import UserSchema from '@/models/User'
+// Import all models to ensure they're registered
+import '@/models/Order'
+import '@/models/OrderItem'
+import '@/models/Item'
 
 export async function GET(
-    req: Request,
-    { params }: { params: { userId: string } }
+    req: NextRequest,
+    { params }: { params: Promise<Record<string, string>> }
 ) {
     try {
-        const { userId } = params // Access the userId from the URL params
+        const { userId } = await params // Access the userId from the URL params
+        if (typeof userId !== 'string') {
+            return NextResponse.json(
+                { error: 'Invalid userId' },
+                { status: 400 }
+            )
+        }
 
         if (!userId) {
             return NextResponse.json(
@@ -25,8 +35,10 @@ export async function GET(
             .populate({
                 path: 'orders',
                 populate: {
-                    path: 'orderItems.item', // Populate the item within orderItems
-                    model: 'Item', // Populate with the Item model
+                    path: 'orderItems',
+                    populate: {
+                        path: 'item',
+                    },
                 },
             })
             .exec()

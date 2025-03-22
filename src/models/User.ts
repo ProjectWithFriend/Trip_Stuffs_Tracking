@@ -1,5 +1,5 @@
 import mongoose, { Document, Schema } from 'mongoose'
-import { OrderSchema, Order } from './Order'
+import { Order } from './Order'
 
 export interface User extends Document {
     _id: string
