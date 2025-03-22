@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import mongoose from 'mongoose'
 import ItemSchema from '@/models/Item'
-import OrderItem from '@/models/OrderItem'
+import Order from '@/models/Order'
 import { Item } from '@/models/Item'
 
 export async function GET() {
@@ -12,17 +12,15 @@ export async function GET() {
 
         const items: Item[] = await ItemSchema.find().lean<Item[]>().exec()
 
-        const totalOrderedQuantities: {
-            _id: mongoose.Types.ObjectId
-            totalQuantityOrdered: number
-        }[] = await OrderItem.aggregate([
-            {
-                $group: {
-                    _id: '$item',
-                    totalQuantityOrdered: { $sum: '$quantity' },
-                },
+        const totalOrderedQuantities = await Order.aggregate([
+          { $unwind: '$orderItems' },
+          {
+            $group: {
+              _id: '$orderItems.item',
+              totalQuantityOrdered: { $sum: '$orderItems.quantity' },
             },
-        ])
+          },
+        ]);
 
         const itemOrderQuantities: { [key: string]: number } =
             totalOrderedQuantities.reduce(
@@ -35,9 +33,6 @@ export async function GET() {
                 },
                 {}
             )
-
-        console.log('totalOrderedQuantities', totalOrderedQuantities)
-        console.log('itemOrderQuantities', itemOrderQuantities)
 
         const itemsWithRemainingQuantity = items.map((item) => {
             const totalOrdered = itemOrderQuantities[item._id.toString()] || 0
