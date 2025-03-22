@@ -2,100 +2,36 @@
 
 import { useEffect, useState } from 'react'
 import {
-    Select,
-    List,
-    Card,
     Typography,
     Layout,
     Space,
-    Modal,
     Badge,
-    Avatar,
     Button,
     Form,
     Input,
     InputNumber,
+    Modal,
+    Empty,
+    theme,
 } from 'antd'
-import { ShoppingOutlined, UserOutlined, PlusOutlined } from '@ant-design/icons'
+import {
+    ShoppingOutlined,
+    PlusOutlined,
+    AppstoreOutlined,
+} from '@ant-design/icons'
+import { User } from '@/models/User'
+import { Item } from '@/models/Item'
+import ItemList from '@/components/ItemList'
+import UserSelect from '@/components/UserSelect'
 
 const { Header, Content } = Layout
 const { Title, Text } = Typography
-
-// Define types
-interface Item {
-    id: string
-    name: string
-    quantity: number
-    price: number
-}
-
-interface User {
-    id: string
-    name: string
-    items: Item[]
-}
-
-const UserSelect = ({
-    users,
-    loading,
-    onSelect,
-}: {
-    users: User[]
-    loading: boolean
-    onSelect: (userId: string) => void
-}) => (
-    <Select
-        loading={loading}
-        className="w-full max-w-xs ml-auto"
-        placeholder="Select a user"
-        onChange={onSelect}
-        optionLabelProp="label"
-    >
-        {users.map((user) => (
-            <Select.Option key={user.id} value={user.id} label={user.name}>
-                <Space>
-                    <Avatar icon={<UserOutlined />} size="small" />
-                    {user.name}
-                </Space>
-            </Select.Option>
-        ))}
-    </Select>
-)
-
-const ItemList = ({ items }: { items: Item[] }) => (
-    <List
-        grid={{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 3, xl: 4, xxl: 4 }}
-        dataSource={items}
-        renderItem={(item) => (
-            <List.Item>
-                <Card hoverable className="shadow-sm">
-                    <div className="flex justify-between items-center">
-                        <div>
-                            <Text strong>{item.name}</Text>
-                            <div>
-                                <Text type="secondary">
-                                    Quantity: {item.quantity}
-                                </Text>
-                            </div>
-                        </div>
-                        <div>
-                            <Text className="text-lg font-bold text-blue-500">
-                                ${item.price}
-                            </Text>
-                        </div>
-                    </div>
-                </Card>
-            </List.Item>
-        )}
-    />
-)
 
 export default function Home() {
     const [users, setUsers] = useState<User[]>([])
     const [selectedUser, setSelectedUser] = useState<User | null>(null)
     const [loading, setLoading] = useState(true)
     const [isModalVisible, setIsModalVisible] = useState(false)
-    const [form] = Form.useForm()
 
     useEffect(() => {
         async function fetchUsers() {
@@ -125,122 +61,85 @@ export default function Home() {
         setIsModalVisible(true)
     }
 
-    const handleOk = () => {
-        form.validateFields().then((values) => {
-            if (selectedUser) {
-                const newItem: Item = {
-                    id: `${Date.now()}`,
-                    name: values.name,
-                    quantity: values.quantity,
-                    price: values.price,
-                }
-                const updatedUser = {
-                    ...selectedUser,
-                    items: [...selectedUser.items, newItem],
-                }
-                setSelectedUser(updatedUser)
-                setIsModalVisible(false)
-                form.resetFields()
-            }
-        })
-    }
-
-    const handleCancel = () => {
-        setIsModalVisible(false)
-    }
+    const { token } = theme.useToken()
 
     return (
-        <Layout className="min-h-screen">
-            <Header className="flex items-center px-4 bg-blue-500 shadow-md">
-                <Space align="center" className="w-full">
-                    <ShoppingOutlined
-                        className="text-2xl text-white"
-                        style={{ color: 'white' }}
-                    />
-                    <UserSelect
-                        users={users}
-                        loading={loading}
-                        onSelect={handleUserChange}
-                    />
-                    <Button
-                        type="primary"
-                        icon={<PlusOutlined />}
-                        onClick={showModal}
-                        className="ml-4"
-                        disabled={!selectedUser}
-                    >
-                        Add Item
-                    </Button>
-                </Space>
+        <Layout className="min-h-screen bg-gray-50">
+            <Header
+                className="flex items-center px-6 bg-gradient-to-r from-blue-600 to-blue-400 shadow-lg"
+                style={{ padding: '0 24px' }}
+            >
+                <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center">
+                        <ShoppingOutlined className="text-2xl text-white mr-3" />
+                        <Title level={4} style={{ color: 'white', margin: 0 }}>
+                            Trip Items
+                        </Title>
+                    </div>
+                    <div className="flex items-center">
+                        <UserSelect
+                            users={users}
+                            loading={loading}
+                            onSelect={handleUserChange}
+                        />
+                        <Button
+                            type="primary"
+                            icon={<PlusOutlined />}
+                            onClick={showModal}
+                            className="ml-4"
+                            disabled={!selectedUser}
+                            style={{
+                                background: token.colorPrimaryActive,
+                                borderColor: token.colorPrimaryActive,
+                            }}
+                        >
+                            Add Item
+                        </Button>
+                    </div>
+                </div>
             </Header>
 
-            <Content className="p-4">
+            <Content className="p-6 max-w-5xl mx-auto w-full">
                 {selectedUser ? (
-                    <div>
-                        <div className="mb-4 flex justify-between items-center">
-                            <Title level={4}>{selectedUser.name}'s Items</Title>
-                            <Badge count={totalItems} showZero color="blue">
-                                <Text className="text-lg font-medium">
-                                    Items
-                                </Text>
+                    <div className="bg-white rounded-lg shadow-md p-6">
+                        <div className="mb-6 flex justify-between items-center pb-4 border-b border-gray-100">
+                            <div className="flex items-center">
+                                <Title level={3} style={{ margin: 0 }}>
+                                    {selectedUser.name}'s Items
+                                </Title>
+                            </div>
+                            <Badge
+                                count={totalItems}
+                                showZero
+                                color="blue"
+                                overflowCount={99}
+                            >
+                                <div className="px-3 py-1 rounded-full bg-blue-50 text-blue-700">
+                                    <Text className="text-md font-medium">
+                                        Total Items
+                                    </Text>
+                                </div>
                             </Badge>
                         </div>
                         <ItemList items={selectedUser.items} />
                     </div>
                 ) : (
-                    <div className="text-center p-8 h-screen flex">
-                        <Title level={4} type="secondary">
-                            Please select a user to view their items
+                    <div className="text-center p-12 bg-white rounded-lg shadow-md flex flex-col items-center justify-center h-[70vh]">
+                        <Empty
+                            image={Empty.PRESENTED_IMAGE_SIMPLE}
+                            description={null}
+                            className="mb-6"
+                        />
+                        <Title level={4} type="secondary" className="mb-4">
+                            No User Selected
                         </Title>
+                        <Text type="secondary" className="max-w-md">
+                            Please select a user from the dropdown above to view
+                            and manage their items
+                        </Text>
                     </div>
                 )}
             </Content>
-
-            <Modal
-                title="Add Item"
-                open={isModalVisible}
-                onOk={handleOk}
-                onCancel={handleCancel}
-            >
-                <Form form={form} layout="vertical">
-                    <Form.Item
-                        name="name"
-                        label="Item Name"
-                        rules={[
-                            {
-                                required: true,
-                                message: 'Please enter the item name',
-                            },
-                        ]}
-                    >
-                        <Input />
-                    </Form.Item>
-                    <Form.Item
-                        name="quantity"
-                        label="Quantity"
-                        rules={[
-                            {
-                                required: true,
-                                message: 'Please enter the quantity',
-                            },
-                        ]}
-                    >
-                        <InputNumber min={1} />
-                    </Form.Item>
-                    <Form.Item
-                        name="price"
-                        label="Price"
-                        rules={[
-                            {
-                                required: true,
-                                message: 'Please enter the price',
-                            },
-                        ]}
-                    >
-                        <InputNumber min={0.01} step={0.01} />
-                    </Form.Item>
-                </Form>
-            </Modal>
         </Layout>
     )
 }
