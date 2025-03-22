@@ -17,9 +17,12 @@ export async function GET() {
             totalQuantityOrdered: number
         }[] = await OrderItem.aggregate([
             {
+                $unwind: '$orderItems',
+            },
+            {
                 $group: {
-                    _id: '$item',
-                    totalQuantityOrdered: { $sum: '$quantity' },
+                    _id: '$orderItems.item',
+                    totalQuantityOrdered: { $sum: '$orderItems.quantity' },
                 },
             },
         ])
