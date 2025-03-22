@@ -48,25 +48,30 @@ export default function Home() {
         setIsModalVisible(true)
     }
 
+    // Extract fetchUserItems function for reuse
+    const fetchUserItems = async () => {
+        if (!selectedUser) return
+
+        try {
+            setLoading(true)
+            const response = await fetch(
+                `/api/users/orders/${selectedUser._id}`
+            )
+            const data = await response.json()
+            setUserData(data)
+        } catch (error) {
+            console.error('Failed to fetch user items:', error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
     useEffect(() => {
         if (selectedUser) {
-            const fetchUserItems = async () => {
-                try {
-                    setLoading(true)
-                    const response = await fetch(
-                        `/api/users/orders/${selectedUser._id}`
-                    )
-                    const data = await response.json()
-                    setUserData(data)
-                    setLoading(false)
-                } catch (error) {
-                    console.error('Failed to fetch user items:', error)
-                    setLoading(false)
-                }
-            }
             fetchUserItems()
         }
     }, [selectedUser])
+
     const { token } = theme.useToken()
 
     return (
@@ -81,9 +86,6 @@ export default function Home() {
                             className="text-2xl text-white mr-3"
                             style={{ color: 'white' }}
                         />
-                        {/* <Title level={4} style={{ color: 'white', margin: 0 }}>
-                            Trip Items
-                        </Title> */}
                     </div>
                     <div className="flex items-center w-2xs">
                         <UserSelect
@@ -115,7 +117,7 @@ export default function Home() {
                         <div className="mb-6 flex justify-between items-center pb-4 border-b border-gray-100">
                             <div className="flex items-center">
                                 <Title level={3} style={{ margin: 0 }}>
-                                    {selectedUser.name}'s Items
+                                    {selectedUser.name}&apos;s Items
                                 </Title>
                             </div>
                         </div>
@@ -154,6 +156,7 @@ export default function Home() {
                     userId={selectedUser?._id || ''}
                     visible={isModalVisible}
                     onClose={() => setIsModalVisible(false)}
+                    onOrderCreated={fetchUserItems}
                 />
             )}
         </Layout>

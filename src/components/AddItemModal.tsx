@@ -14,12 +14,14 @@ interface AddItemModalProps {
     userId: string
     visible: boolean
     onClose: () => void
+    onOrderCreated?: () => void
 }
 
 export default function AddItemModal({
     userId,
     visible,
     onClose,
+    onOrderCreated
 }: AddItemModalProps) {
     const [items, setItems] = useState<Item[]>([])
     const [selectedItems, setSelectedItems] = useState<Record<string, number>>(
@@ -30,22 +32,21 @@ export default function AddItemModal({
     const [submitting, setSubmitting] = useState<boolean>(false)
     const [form] = Form.useForm()
 
-    useEffect(() => {
-        const fetchItems = async () => {
-            try {
-                setLoading(true)
-                const response = await fetch('/api/items')
-                const data = await response.json()
-                setItems(data)
-                console.log('item', data)
-            } catch (error) {
-                console.error('Failed to fetch items:', error)
-                message.error('Failed to load items')
-            } finally {
-                setLoading(false)
-            }
+    const fetchItems = async (updateLoading = true) => {
+        try {
+            if (updateLoading) setLoading(true)
+            const response = await fetch('/api/items')
+            const data = await response.json()
+            setItems(data)
+        } catch (error) {
+            console.error('Failed to fetch items:', error)
+            message.error('Failed to load items')
+        } finally {
+            if (updateLoading) setLoading(false)
         }
+    }
 
+    useEffect(() => {
         if (visible) {
             fetchItems()
             setSelectedItems({}) // Reset selections when modal opens
@@ -113,6 +114,13 @@ export default function AddItemModal({
             }
 
             message.success('Order created successfully')
+
+            await fetchItems(false)
+
+            if (onOrderCreated) {
+                await onOrderCreated();
+            }
+
             onClose()
         } catch (error) {
             console.error('Error creating order:', error)
