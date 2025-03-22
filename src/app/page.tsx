@@ -16,12 +16,10 @@ import {
     Input,
     InputNumber,
 } from 'antd'
-import {
-    ShoppingOutlined,
-    UserOutlined,
-    PlusOutlined,
-    MinusOutlined,
-} from '@ant-design/icons'
+import { ShoppingOutlined, UserOutlined, PlusOutlined } from '@ant-design/icons'
+
+const { Header, Content } = Layout
+const { Title, Text } = Typography
 
 // Define types
 interface Item {
@@ -37,8 +35,60 @@ interface User {
     items: Item[]
 }
 
-const { Header, Content } = Layout
-const { Title, Text } = Typography
+const UserSelect = ({
+    users,
+    loading,
+    onSelect,
+}: {
+    users: User[]
+    loading: boolean
+    onSelect: (userId: string) => void
+}) => (
+    <Select
+        loading={loading}
+        className="w-full max-w-xs ml-auto"
+        placeholder="Select a user"
+        onChange={onSelect}
+        optionLabelProp="label"
+    >
+        {users.map((user) => (
+            <Select.Option key={user.id} value={user.id} label={user.name}>
+                <Space>
+                    <Avatar icon={<UserOutlined />} size="small" />
+                    {user.name}
+                </Space>
+            </Select.Option>
+        ))}
+    </Select>
+)
+
+const ItemList = ({ items }: { items: Item[] }) => (
+    <List
+        grid={{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 3, xl: 4, xxl: 4 }}
+        dataSource={items}
+        renderItem={(item) => (
+            <List.Item>
+                <Card hoverable className="shadow-sm">
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <Text strong>{item.name}</Text>
+                            <div>
+                                <Text type="secondary">
+                                    Quantity: {item.quantity}
+                                </Text>
+                            </div>
+                        </div>
+                        <div>
+                            <Text className="text-lg font-bold text-blue-500">
+                                ${item.price}
+                            </Text>
+                        </div>
+                    </div>
+                </Card>
+            </List.Item>
+        )}
+    />
+)
 
 export default function Home() {
     const [users, setUsers] = useState<User[]>([])
@@ -99,28 +149,6 @@ export default function Home() {
         setIsModalVisible(false)
     }
 
-    const increaseQuantity = (itemId: string) => {
-        if (selectedUser) {
-            const updatedItems = selectedUser.items.map((item) =>
-                item.id === itemId
-                    ? { ...item, quantity: item.quantity + 1 }
-                    : item
-            )
-            setSelectedUser({ ...selectedUser, items: updatedItems })
-        }
-    }
-
-    const decreaseQuantity = (itemId: string) => {
-        if (selectedUser) {
-            const updatedItems = selectedUser.items.map((item) =>
-                item.id === itemId && item.quantity > 1
-                    ? { ...item, quantity: item.quantity - 1 }
-                    : item
-            )
-            setSelectedUser({ ...selectedUser, items: updatedItems })
-        }
-    }
-
     return (
         <Layout className="min-h-screen">
             <Header className="flex items-center px-4 bg-blue-500 shadow-md">
@@ -129,35 +157,17 @@ export default function Home() {
                         className="text-2xl text-white"
                         style={{ color: 'white' }}
                     />
-
-                    <Select
+                    <UserSelect
+                        users={users}
                         loading={loading}
-                        className="w-full max-w-xs ml-auto"
-                        placeholder="Select a user"
-                        onChange={handleUserChange}
-                        optionLabelProp="label"
-                    >
-                        {users.map((user) => (
-                            <Select.Option
-                                key={user.id}
-                                value={user.id}
-                                label={user.name}
-                            >
-                                <Space>
-                                    <Avatar
-                                        icon={<UserOutlined />}
-                                        size="small"
-                                    />
-                                    {user.name}
-                                </Space>
-                            </Select.Option>
-                        ))}
-                    </Select>
+                        onSelect={handleUserChange}
+                    />
                     <Button
                         type="primary"
                         icon={<PlusOutlined />}
                         onClick={showModal}
                         className="ml-4"
+                        disabled={!selectedUser}
                     >
                         Add Item
                     </Button>
@@ -175,62 +185,7 @@ export default function Home() {
                                 </Text>
                             </Badge>
                         </div>
-
-                        <List
-                            grid={{
-                                gutter: 16,
-                                xs: 1,
-                                sm: 2,
-                                md: 3,
-                                lg: 3,
-                                xl: 4,
-                                xxl: 4,
-                            }}
-                            dataSource={selectedUser.items}
-                            renderItem={(item) => (
-                                <List.Item>
-                                    <Card hoverable className="shadow-sm">
-                                        <div className="flex justify-between items-center">
-                                            <div>
-                                                <Text strong>{item.name}</Text>
-                                                <div>
-                                                    <Text type="secondary">
-                                                        Quantity:{' '}
-                                                        {item.quantity}
-                                                    </Text>
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <Text className="text-lg font-bold text-blue-500">
-                                                    ${item.price}
-                                                </Text>
-                                            </div>
-                                            <div>
-                                                <Button
-                                                    icon={<PlusOutlined />}
-                                                    onClick={() =>
-                                                        increaseQuantity(
-                                                            item.id
-                                                        )
-                                                    }
-                                                />
-                                                <Button
-                                                    icon={<MinusOutlined />}
-                                                    onClick={() =>
-                                                        decreaseQuantity(
-                                                            item.id
-                                                        )
-                                                    }
-                                                    disabled={
-                                                        item.quantity <= 1
-                                                    }
-                                                />
-                                            </div>
-                                        </div>
-                                    </Card>
-                                </List.Item>
-                            )}
-                        />
+                        <ItemList items={selectedUser.items} />
                     </div>
                 ) : (
                     <div className="text-center p-8 h-screen flex">
@@ -283,32 +238,6 @@ export default function Home() {
                         ]}
                     >
                         <InputNumber min={0.01} step={0.01} />
-                    </Form.Item>
-                    <Form.Item>
-                        <Space>
-                            <Button
-                                icon={<MinusOutlined />}
-                                onClick={() => {
-                                    const quantity =
-                                        form.getFieldValue('quantity') || 1
-                                    if (quantity > 1) {
-                                        form.setFieldsValue({
-                                            quantity: quantity - 1,
-                                        })
-                                    }
-                                }}
-                            />
-                            <Button
-                                icon={<PlusOutlined />}
-                                onClick={() => {
-                                    const quantity =
-                                        form.getFieldValue('quantity') || 1
-                                    form.setFieldsValue({
-                                        quantity: quantity + 1,
-                                    })
-                                }}
-                            />
-                        </Space>
                     </Form.Item>
                 </Form>
             </Modal>
