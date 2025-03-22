@@ -1,16 +1,19 @@
-import mongoose from 'mongoose'
+import mongoose, { Document, Schema } from 'mongoose'
 
-export interface Item {
-    id: string
+export interface Item extends Document {
+    _id: string
     name_th: string
     name_en: string
-    const: number
-    type: 'ALCOHOLIC' | 'NON_ALCOHOLIC_BEVERAGE' | 'SNACK'
+    cost: number
+    type: 'ALCOHOLIC_BEVERAGE' | 'NON_ALCOHOLIC_BEVERAGE' | 'SNACK'
     initial_quantity: number
-    quantity: number
+    // quantity: number
+    createdAt: Date
+    updatedAt: Date
+    remainingQuantity: number
 }
 
-const ItemSchema = new mongoose.Schema(
+export const ItemSchema = new Schema<Item>(
     {
         name_th: {
             type: String,
@@ -20,7 +23,7 @@ const ItemSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
-        const: {
+        cost: {
             type: Number,
             required: true,
         },
@@ -33,16 +36,12 @@ const ItemSchema = new mongoose.Schema(
             type: Number,
             required: true,
         },
-        quantity: {
-            type: Number,
-            required: true,
-        },
+        // quantity: {
+        //     type: Number,
+        //     required: true,
+        // },
     },
-    {
-        timestamps: true,
-    }
+    { timestamps: true }
 )
 
-const Item = mongoose.models.Item || mongoose.model('Item', ItemSchema)
-
-export default Item
+export default mongoose.models.Item || mongoose.model<Item>('Item', ItemSchema)

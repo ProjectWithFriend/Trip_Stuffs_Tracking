@@ -1,39 +1,31 @@
 import { NextResponse } from 'next/server'
-
-// Mock data for the API
-const users = [
-    {
-        id: '1',
-        name: 'John Doe',
-        items: [
-            { id: '101', name: 'Coke', quantity: 1, price: 13 },
-            { id: '102', name: 'Chips', quantity: 2, price: 8 },
-            { id: '103', name: 'Sandwich', quantity: 1, price: 22 },
-        ],
-    },
-    {
-        id: '2',
-        name: 'Jane Smith',
-        items: [
-            { id: '201', name: 'Water', quantity: 3, price: 5 },
-            { id: '202', name: 'Chocolate', quantity: 2, price: 10 },
-            { id: '203', name: 'Sunscreen', quantity: 1, price: 25 },
-        ],
-    },
-    {
-        id: '3',
-        name: 'Mike Johnson',
-        items: [
-            { id: '301', name: 'Beer', quantity: 6, price: 18 },
-            { id: '302', name: 'Snacks', quantity: 4, price: 12 },
-            { id: '303', name: 'Hat', quantity: 1, price: 15 },
-        ],
-    },
-]
+import mongoose from 'mongoose'
+import UserSchema from '@/models/User'
 
 export async function GET() {
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    try {
+        if (mongoose.connection.readyState === 0) {
+            await mongoose.connect(process.env.MONGODB_URI!)
+        }
 
-    return NextResponse.json(users)
+        // const users = await UserSchema.find().populate('orders').exec()
+
+        const users = await UserSchema.find()
+            // .populate({
+            //     path: 'orders',
+            //     populate: {
+            //         path: 'orderItems.item', // Populating the item within orderItems
+            //         model: 'Item', // Populate with the Item model
+            //     },
+            // })
+            .exec()
+
+        return NextResponse.json(users)
+    } catch (error) {
+        console.error('Error retrieving users:', error)
+        return NextResponse.json(
+            { error: 'Failed to retrieve users' },
+            { status: 500 }
+        )
+    }
 }

@@ -4,7 +4,14 @@ import React from 'react'
 
 const { Text } = Typography
 
-export default function ItemList({ items }: { items: Item[] }) {
+export default function ItemList({
+    items,
+}: {
+    items: {
+        item: Item
+        quantity: number
+    }[]
+}) {
     return (
         <List
             grid={{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 3, xl: 4, xxl: 4 }}
@@ -14,7 +21,7 @@ export default function ItemList({ items }: { items: Item[] }) {
                     <Card hoverable className="shadow-sm">
                         <div className="flex justify-between items-center">
                             <div>
-                                <Text strong>{item.name_th}</Text>
+                                <Text strong>{item.item.name_th}</Text>
                                 <div>
                                     <Text type="secondary">
                                         Quantity: {item.quantity}
@@ -23,7 +30,12 @@ export default function ItemList({ items }: { items: Item[] }) {
                             </div>
                             <div>
                                 <Text className="text-lg font-bold text-blue-500">
-                                    ${item.const}
+                                    {(
+                                        item.item.cost * item.quantity
+                                    ).toLocaleString('en-US', {
+                                        style: 'currency',
+                                        currency: 'THB',
+                                    })}
                                 </Text>
                             </div>
                         </div>

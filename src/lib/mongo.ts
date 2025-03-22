@@ -45,11 +45,4 @@ async function dbConnect() {
     return cached.conn
 }
 
-const ItemSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        required: [true, 'Name is required'],
-    },
-})
-
 export default dbConnect
